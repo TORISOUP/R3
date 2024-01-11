@@ -38,6 +38,9 @@ public class ReactiveProperty<T> : ReadOnlyReactiveProperty<T>, ISubject<T>, IDi
             OnNext(value);
         }
     }
+    public ReactiveProperty() : this(default!)
+    {
+    }
 
     public ReactiveProperty(T value)
         : this(value, EqualityComparer<T>.Default)
