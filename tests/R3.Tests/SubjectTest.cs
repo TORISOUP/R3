@@ -95,4 +95,29 @@ public class SubjectTest
             l.Result.Exception!.Message.Should().Be("foo");
         }
     }
+
+    [Fact]
+    public void SubscribeToSubject()
+    {
+        var firstSubject = new Subject<int>();
+        var secondSubject = new Subject<int>();
+        using var l = secondSubject.Materialize().ToLiveList();
+        var ex = new Exception("error");
+
+        firstSubject.Subscribe(secondSubject);
+        firstSubject.OnNext(1);
+        firstSubject.OnNext(2);
+        firstSubject.OnNext(3);
+        firstSubject.OnErrorResume(ex);
+        firstSubject.Dispose();
+
+        l.AssertEqual([
+            new Notification<int>(1),
+            new Notification<int>(2),
+            new Notification<int>(3),
+            new Notification<int>(ex),
+            new Notification<int>(Result.Success)
+        ]);
+        l.AssertIsCompleted();
+    }
 }

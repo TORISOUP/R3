@@ -28,6 +28,12 @@ public static class ObservableSubscribeExtensions
         return source.Subscribe(new AnonymousObserver<T>(onNext, onErrorResume, onCompleted));
     }
 
+    [DebuggerStepThrough]
+    public static IDisposable Subscribe<T>(this Observable<T> source, ISubject<T> subject)
+    {
+        return source.Subscribe(new SubjectObserver<T>(subject));
+    }
+
     // with state
 
     [DebuggerStepThrough]
@@ -143,5 +149,34 @@ internal sealed class AnonymousObserver<T, TState>(Action<T, TState> onNext, Act
     protected override void OnCompletedCore(Result complete)
     {
         onCompleted(complete, state);
+    }
+}
+
+[DebuggerStepThrough]
+internal sealed class SubjectObserver<T> : Observer<T>
+{
+    ISubject<T> subject;
+
+    public SubjectObserver(ISubject<T> subject)
+    {
+        this.subject = subject;
+    }
+
+    [DebuggerStepThrough]
+    protected override void OnNextCore(T value)
+    {
+        subject.OnNext(value);
+    }
+
+    [DebuggerStepThrough]
+    protected override void OnErrorResumeCore(Exception error)
+    {
+        subject.OnErrorResume(error);
+    }
+
+    [DebuggerStepThrough]
+    protected override void OnCompletedCore(Result result)
+    {
+        subject.OnCompleted(result);
     }
 }
